@@ -40,4 +40,67 @@ RSpec.describe "Cats", type: :request do
     expect(cat.image).to eq 'https://c2.peakpx.com/wallpaper/591/784/17/cat-animal-pet-cat-face-head-black-wallpaper-preview.jpg'
   end 
   end
+
+  describe 'cannot create a cat without valid attributes' do
+    it 'cannot create a cat without a name' do
+      cat_params = {
+        cat: {
+          age: 2,
+          enjoys: 'cuddles and belly rubs',
+          image: 'normalcat.jpg'
+        }
+      }
+    post '/cats', params: cat_params
+    cat = JSON.parse(response.body)
+    puts "******** ", response.body
+
+    expect(response).to have_http_status(422)
+    expect(cat['name']).to include "can't be blank"
+    end
+
+    it 'cannot create a cat without an age' do
+     cat_params = {
+      cat: {
+        name: 'Boo',
+        enjoys: 'being very cute',
+        image: 'somecutepic.jpg'
+      }
+     }
+     post '/cats', params: cat_params
+     cat = JSON.parse(response.body)
+     expect(response).to have_http_status(422)
+     expect(cat['age']).to include "can't be blank"
+    end
+  end
+
+describe "cannot update a cat without valid attributes" do
+  it 'cannot update a cat without a name' do
+    # first create a cat with a name
+    cat_params = {
+      cat: {
+        name: 'Boo',
+        age: 2,
+        enjoys:'laying in the sun',
+        image: 'somepic.com'
+      }
+    }
+    post '/cats', params: cat_params
+    cat = Cat.first
+    # Then create updated params
+    update_params = {
+      cat: {
+        name: "",
+        age: 2,
+        enjoys: 'lots of love and attention',
+        image: 'cat.com'
+      }
+    }
+    patch "/cats/#{cat.id}", params: update_params
+    cat = JSON.parse(response.body)
+    expect(response).to have_http_status(422)
+    expect(cat['name']).to include "can't be blank"
+  end
+end
+
+
 end
